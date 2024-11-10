@@ -52,7 +52,7 @@ int main() {
     int front = -1;
     int item;
     for (;;) {
-        printf("\n1: Enque\n2: Deque\n3: Display\n4: Exit\n");
+        printf("\n1: Enque\n2: Deque1\n3: Display\n4: Exit\n");
         scanf("%d", &choice);
         switch (choice) {
             case 1:
