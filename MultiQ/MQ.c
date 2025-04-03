@@ -12,7 +12,7 @@ typedef struct{
 }Process;
 
 void print_process_data(Process q[], int n) {
-    printf("PID\tName\t\tAT\tBT\tCT\tTAT\tWT\n");
+    printf("PID\tName\tAT\tBT\tCT\tTAT\tWT\n");
     for (int i = 0; i < n; i++) {
         printf("%d\t%s\t%d\t%d\t%d\t%d\t%d\n", q[i].id,q[i].name, q[i].AT, q[i].BT, q[i].CT, q[i].TAT, q[i].WT);
     }
