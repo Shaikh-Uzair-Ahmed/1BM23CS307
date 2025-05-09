@@ -2,6 +2,7 @@
 #include <limits.h>
 
 int n = 4;
+
 int dist[4][4] = {
     {0, 10, 15, 20},
     {10, 0, 35, 25},
@@ -12,12 +13,16 @@ int dist[4][4] = {
 int visited[4];
 int minCost = INT_MAX;
 int path[4];
+int bestPath[4];
 
 void tsp(int city, int count, int costSoFar) {
     if (count == n) {
-        if (costSoFar + dist[city][0] < minCost) {
-            minCost = costSoFar + dist[city][0];
-            path[count - 1] = city;
+        int totalCost = costSoFar + dist[city][0];
+        if (totalCost < minCost) {
+            minCost = totalCost;
+            for (int i = 0; i < n; i++) {
+                bestPath[i] = path[i];
+            }
         }
         return;
     }
@@ -34,16 +39,17 @@ void tsp(int city, int count, int costSoFar) {
 
 int main() {
     for (int i = 0; i < n; i++) visited[i] = 0;
-    visited[0] = 1;  // Start from the first city
-    path[0] = 0;  // Starting point
+
+    visited[0] = 1;
+    path[0] = 0;
     tsp(0, 1, 0);
 
     printf("Minimum cost: %d\n", minCost);
     printf("Optimal path: ");
     for (int i = 0; i < n; i++) {
-        printf("%d -> ", path[i] + 1);
+        printf("%d -> ", bestPath[i] + 1);
     }
-    printf("1\n");
+    printf("1\n"); // Return to starting city
 
     return 0;
 }
