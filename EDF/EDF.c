@@ -4,70 +4,81 @@
 #define MAX_TASKS 10
 
 typedef struct {
-    int id, RT, CT, deadline, release_time;  // RT = Remaining Time, CT = Completion Time
-} Process;
+    int id;
+    int CT;             // Computation Time
+    int RT;             // Remaining Time
+    int period;         // Period (release interval)
+    int next_release;   // Next release time
+    int deadline;       // Relative deadline
+    int abs_deadline;   // Absolute deadline (calculated)
+} Task;
 
-// Sort tasks by their absolute deadline (earliest first)
-void sorted(Process p[], int n) {
-    int i, j;
-    for (i = 1; i < n; i++) {
-        for (j = 0; j < n - i; j++) {
-            if (p[j].deadline > p[j + 1].deadline || (p[j].deadline == p[j + 1].deadline && p[j].id > p[j + 1].id)) {
-                Process temp = p[j];
-                p[j] = p[j + 1];
-                p[j + 1] = temp;
+// Sort tasks by earliest absolute deadline
+void sort_by_deadline(Task tasks[], int n) {
+    for (int i = 1; i < n; i++) {
+        for (int j = 0; j < n - i; j++) {
+            if (tasks[j].abs_deadline > tasks[j + 1].abs_deadline || 
+                (tasks[j].abs_deadline == tasks[j + 1].abs_deadline && tasks[j].id > tasks[j + 1].id)) {
+                Task temp = tasks[j];
+                tasks[j] = tasks[j + 1];
+                tasks[j + 1] = temp;
             }
         }
     }
 }
 
-// Earliest Deadline First Scheduling (without using period or next_release)
-void EDF(Process p[], int n, int totaltime) {
-    // Initialize remaining time (RT) to completion time (CT)
-    for (int i = 0; i < n; i++) {
-        p[i].RT = p[i].CT;  // Set RT to the execution time initially
-        p[i].release_time = 0;  // Assume all tasks are released at time 0
-        p[i].deadline = p[i].CT; // Deadline = CT for simplicity (can be adjusted if needed)
-    }
-
+void EDF(Task tasks[], int n, int totaltime) {
     for (int t = 0; t < totaltime; t++) {
-        int executed = 0;
-
-        // Sort tasks by their absolute deadline (earliest first)
-        sorted(p, n);
-
-        // Execute the task with the earliest deadline
+        // Release new instances of tasks if needed
         for (int i = 0; i < n; i++) {
-            if (p[i].RT > 0 && p[i].release_time <= t) {  // Task has remaining time to execute and is released
-                printf("Time %d: Executing Task %d\n", t, p[i].id);
-                p[i].RT--;  // Decrease the remaining time of the task
-                executed = 1;
-
-                if (p[i].RT == 0) {  // Task is finished after execution
-                    printf("Time %d: Task %d completed\n", t + 1, p[i].id);
-                }
-                break;  // Task executed, break out of loop
+            if (t == tasks[i].next_release) {
+                tasks[i].RT = tasks[i].CT;
+                tasks[i].abs_deadline = t + tasks[i].deadline;
+                tasks[i].next_release += tasks[i].period;
+                printf("Time %d: Task %d released (Deadline at %d)\n", t, tasks[i].id, tasks[i].abs_deadline);
             }
         }
 
-        // If no task was executed, CPU is idle
+        // Sort tasks by deadline
+        sort_by_deadline(tasks, n);
+
+        // Execute task with earliest deadline
+        int executed = 0;
+        for (int i = 0; i < n; i++) {
+            if (tasks[i].RT > 0 && t < tasks[i].abs_deadline) {
+                printf("Time %d: Executing Task %d\n", t, tasks[i].id);
+                tasks[i].RT--;
+                executed = 1;
+
+                if (tasks[i].RT == 0) {
+                    printf("Time %d: Task %d completed", t + 1, tasks[i].id);
+                    if (t + 1 > tasks[i].abs_deadline) {
+                        printf(" (Deadline Missed!)");
+                    }
+                    printf("\n");
+                }
+                break;
+            }
+        }
+
         if (!executed) {
-            printf("Time %d: Idle\n", t);
+            printf("Time %d: CPU Idle\n", t);
         }
     }
 }
 
 int main() {
-    Process p[MAX_TASKS] = {
-        {1, 2, 2, 0, 0}, // Task 1: RT=2, CT=2, Deadline=2
-        {2, 3, 3, 0, 0}, // Task 2: RT=3, CT=3, Deadline=3
-        {3, 1, 1, 0, 0}  // Task 3: RT=1, CT=1, Deadline=1
+    // Define periodic tasks: {id, CT, RT, period, next_release, deadline, abs_deadline}
+    Task tasks[MAX_TASKS] = {
+        {1, 2, 0, 5, 0, 5, 0},  // Task 1: CT=2, Period=5, Deadline=5
+        {2, 1, 0, 3, 0, 3, 0},  // Task 2: CT=1, Period=3, Deadline=3
+        {3, 1, 0, 7, 0, 7, 0}   // Task 3: CT=1, Period=7, Deadline=7
     };
 
-    int numofTask = 3;
-    int TotalTime = 10; // Total simulation time
+    int numTasks = 3;
+    int totalTime = 20;
 
-    EDF(p, numofTask, TotalTime);
+    EDF(tasks, numTasks, totalTime);
 
     return 0;
 }
