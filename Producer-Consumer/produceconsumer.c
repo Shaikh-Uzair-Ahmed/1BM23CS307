@@ -1,6 +1,8 @@
+// Online C compiler to run C program online
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h> // for sleep()
+#include <time.h>
 
 #define SIZE 5
 
@@ -9,7 +11,6 @@ int in = 0, out = 0;
 int empty = SIZE;  // semaphore: counts empty slots
 int full = 0;      // semaphore: counts full slots
 int mutex = 1;     // binary semaphore for mutual exclusion
-
 void wait(int *s) {
     while (*s <= 0); // busy wait
     (*s)--;  // decrement semaphore value
@@ -45,40 +46,22 @@ void consume() {
 
 int main() {
     int item = 1;
-
+    srand(time(NULL));
     // Simulate producer and consumer running automatically
     while (1) {
-        produce(item);  // produce an item
-        item++;         // increment item for next production
-        sleep(1);       // simulate time taken to produce an item
+        int ch = rand()%2;
+        switch(ch){
+            case 0: if(full==4){break;}
+                    produce(item);  // produce an item
+                    item++;         // increment item for next production
+                    sleep(1);
+                    break;
+            case 1: consume();      // consume an item
+                    sleep(1);
+                    break;
+        }
 
-        consume();      // consume an item
-        sleep(1);       // simulate time taken to consume an item
     }
 
     return 0;
 }
-
-// int main() {
-//     int choice, item;
-
-//     while (1) {
-//         printf("\n1. Produce\n2. Consume\n3. Exit\nChoose: ");
-//         scanf("%d", &choice);
-
-//         switch (choice) {
-//             case 1:
-//                 printf("Enter item to produce: ");
-//                 scanf("%d", &item);
-//                 produce(item);
-//                 break;
-//             case 2:
-//                 consume();
-//                 break;
-//             case 3:
-//                 return 0;
-//             default:
-//                 printf("Invalid choice.\n");
-//         }
-//     }
-// }
