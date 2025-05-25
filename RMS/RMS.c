@@ -4,74 +4,78 @@
 #define MAX_TASKS 10
 
 typedef struct {
-    int id, period, RT, CT;  // RT = Remaining Time, CT = Completion Time (Execution Time)
-} Process;
+    int id;
+    int CT;             // Computation Time
+    int RT;             // Remaining Time
+    int period;         // Period (defines priority)
+    int next_release;   // Next release time
+    int deadline;       // Relative deadline
+} Task;
 
-// Sort tasks based on their period (shorter period means higher priority in RMS)
-void sorted(Process p[], int n) {
-    int i, j;
-    for (i = 1; i < n; i++) {
-        for (j = 0; j < n - i; j++) {
-            if (p[j].period > p[j + 1].period || (p[j].period == p[j + 1].period && p[j].id > p[j + 1].id)) {
-                Process temp = p[j];
-                p[j] = p[j + 1];
-                p[j + 1] = temp;
+// Sort tasks by shortest period (RMS priority)
+void sort_by_priority(Task tasks[], int n) {
+    for (int i = 1; i < n; i++) {
+        for (int j = 0; j < n - i; j++) {
+            if (tasks[j].period > tasks[j + 1].period || 
+                (tasks[j].period == tasks[j + 1].period && tasks[j].id > tasks[j + 1].id)) {
+                Task temp = tasks[j];
+                tasks[j] = tasks[j + 1];
+                tasks[j + 1] = temp;
             }
         }
     }
 }
 
-// Rate Monotonic Scheduling
-void RMS(Process p[], int n, int totaltime) {
-    sorted(p, n);  // Sort tasks based on their period
-
-    // Initialize remaining times (RT) and set all tasks to their execution time
-    for (int i = 0; i < n; i++) {
-        p[i].RT = p[i].CT;  // Set RT to the execution time initially
-    }
-
+void RMS(Task tasks[], int n, int totaltime) {
     for (int t = 0; t < totaltime; t++) {
-        int executed = 0;
-
-        // Check for each task and run it if ready
+        // Release new instances of tasks if needed
         for (int i = 0; i < n; i++) {
-            // Release task at the start of its period (every t % period == 0) and if RT > 0
-            if (t % p[i].period == 0 && p[i].RT == 0) {
-                p[i].RT = p[i].CT;  // Reset remaining time when a task finishes its period
-                printf("Time %d: Task %d released\n", t, p[i].id);
-            }
-
-            // If time `t` is a multiple of the task's period and the task still has remaining time
-            if (t % p[i].period == 0 && p[i].RT > 0) {
-                printf("Time %d: Executing Task %d\n", t, p[i].id);
-                p[i].RT--;  // Decrease remaining time of the task
-                executed = 1;
-
-                if (p[i].RT == 0) {  // Task is finished after execution
-                    printf("Time %d: Task %d completed\n", t + 1, p[i].id);
+            if (t == tasks[i].next_release) {
+                if (tasks[i].RT > 0) {
+                    printf("Time %d: Task %d missed deadline!\n", t, tasks[i].id);
                 }
-                break;  // Task executed, break out of loop
+                tasks[i].RT = tasks[i].CT;
+                tasks[i].next_release += tasks[i].period;
+                printf("Time %d: Task %d released (Next release at %d)\n", t, tasks[i].id, tasks[i].next_release);
             }
         }
 
-        // If no task was executed, CPU is idle
+        // Sort tasks by priority (shortest period first)
+        sort_by_priority(tasks, n);
+
+        // Execute the highest-priority ready task
+        int executed = 0;
+        for (int i = 0; i < n; i++) {
+            if (tasks[i].RT > 0) {
+                printf("Time %d: Executing Task %d\n", t, tasks[i].id);
+                tasks[i].RT--;
+                executed = 1;
+
+                if (tasks[i].RT == 0) {
+                    printf("Time %d: Task %d completed\n", t + 1, tasks[i].id);
+                }
+                break;
+            }
+        }
+
         if (!executed) {
-            printf("Time %d: Idle\n", t);
+            printf("Time %d: CPU Idle\n", t);
         }
     }
 }
 
 int main() {
-    Process p[MAX_TASKS] = {
-        {1, 3, 2, 2}, // Task 1: period=3, RT=2, CT=2
-        {2, 5, 2, 2}, // Task 2: period=5, RT=2, CT=2
-        {3, 7, 2, 2}  // Task 3: period=7, RT=2, CT=2
+    // Define periodic tasks: {id, CT, RT, period, next_release, deadline}
+    Task tasks[MAX_TASKS] = {
+        {1, 2, 0, 5, 0, 5},  // Task 1: CT=2, Period=5
+        {2, 1, 0, 3, 0, 3},  // Task 2: CT=1, Period=3
+        {3, 1, 0, 7, 0, 7}   // Task 3: CT=1, Period=7
     };
 
-    int numofTask = 3;
-    int TotalTime = 15; // Total simulation time
+    int numTasks = 3;
+    int totalTime = 20;
 
-    RMS(p, numofTask, TotalTime);
+    RMS(tasks, numTasks, totalTime);
 
     return 0;
 }
