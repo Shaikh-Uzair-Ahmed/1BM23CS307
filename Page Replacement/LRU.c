@@ -36,33 +36,33 @@ int main() {
 
         // If the page is not found, we need to replace a page
         if (!found) {
-            int emptyFrame = -1;
+            int index = -1;
 
             // Check for empty frames and place the new page there if available
             for (int j = 0; j < frames; j++) {
                 if (frame[j] == -1) {
-                    emptyFrame = j;  // Find the first empty frame
+                    index = j;  // Find the first empty frame
                     break;
                 }
             }
 
-            if (emptyFrame != -1) {
+            if (index != -1) {
                 // Place the page in the empty frame
-                frame[emptyFrame] = referenceString[i];
-                recent[emptyFrame] = i; // Mark the access time as the current index
+                frame[index] = referenceString[i];
+                recent[index] = i; // Mark the access time as the current index
                 pageFaults++;  // Increment page fault
             } else {
                 // If no empty frame, we need to replace the least recently used page
-                int lruIndex = 0;
+                index = 0;
                 for (int j = 1; j < frames; j++) {
-                    if (recent[j] < recent[lruIndex]) {
-                        lruIndex = j;  // Find the least recently used page
+                    if (recent[j] < recent[index]) {
+                        index = j;  // Find the least recently used page
                     }
                 }
 
                 // Replace the least recently used page
-                frame[lruIndex] = referenceString[i];
-                recent[lruIndex] = i; // Update the access time for the replaced page
+                frame[index] = referenceString[i];
+                recent[index] = i; // Update the access time for the replaced page
                 pageFaults++;  // Increment page fault
             }
         }
