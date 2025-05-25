@@ -42,16 +42,14 @@ int main() {
             for (int j = 0; j < frames; j++) {
                 if (frame[j] == -1) {
                     index = j;  // Find the first empty frame
+                    frame[index] = referenceString[i];
+                    recent[index] = i; // Mark the access time as the current index
+                    pageFaults++;  // Increment page fault
                     break;
                 }
             }
 
-            if (index != -1) {
-                // Place the page in the empty frame
-                frame[index] = referenceString[i];
-                recent[index] = i; // Mark the access time as the current index
-                pageFaults++;  // Increment page fault
-            } else {
+            if (index == -1) {
                 // If no empty frame, we need to replace the least recently used page
                 index = 0;
                 for (int j = 1; j < frames; j++) {
