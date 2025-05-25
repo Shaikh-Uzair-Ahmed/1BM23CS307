@@ -36,7 +36,7 @@ for (int i = 0; i < pages; i++) {
         printf("%d ", frame[k]); 
         } 
         printf("\n");
-	}
+}
 
 	printf("Total Page Faults: %d\n", pageFaults);
 	return 0;
