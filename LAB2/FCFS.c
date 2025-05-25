@@ -1,94 +1,68 @@
-#include<stdio.h>
+#include <stdio.h>
 
-struct FCFS
-{   
-    int pid;
-    int at;
-    int bt;
-    int ct;
-    int tat;
-    int wt;
-};
+typedef struct Process{
+    int id,AT,BT,CT,TAT,WT,BTL;
+}Process;
 
-void sort(struct FCFS p[], int n){
-    int min = p[0].at;
-    int temp = 0;
-    for (int i = 0; i < n; i++)
-    {
-        min=p[i].at;
-        for (int j = i; j < n; j++)
-        {
-            if (p[j].at<min)
-            {
-                temp = p[i].at;
-                p[i].at = p[j].at;
-                p[j].at = temp;
-                temp = p[j].bt;
-                p[j].bt = p[i].bt;
-                p[i].bt = temp;
-                temp = p[i].pid;
-                p[i].pid = p[j].pid;
-                p[j].pid = temp;
+void sorted(Process p[], int n) {
+    int i, j;
+    for (i = 1; i < n; i++) {
+        for (j = 0; j < n - i; j++) { 
+            if (p[j].AT > p[j + 1].AT || (p[j].AT == p[j + 1].AT && p[j].id > p[j + 1].id)) {
+                struct Process temp = p[j];
+                p[j] = p[j + 1];
+                p[j + 1] = temp;
             }
-            
         }
-        
     }
-    
+}
+
+void print_process_data(Process p[], int n) {
+    printf("PID\tAT\tBT\tCT\tTAT\tWT\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t%d\t%d\n", p[i].id, p[i].AT, p[i].BT, p[i].CT, p[i].TAT, p[i].WT);
+    }
+
+    int ttat = 0, twt = 0;
+    for (int i = 0; i < n; i++) {
+        ttat += p[i].TAT;
+        twt += p[i].WT;
+    }
+
+    double avg_tat = (double)ttat / n;
+    double avg_wt = (double)twt / n;
+
+    printf("Average Turn-around time: %lf\n", avg_tat);
+    printf("Average Waiting time: %lf\n", avg_wt);
+}
+
+void FCFS(Process p[],int n){
+    int completed=0,time=0;
+    for(int i=0;i<n;i++){
+        if(time>=p[i].AT)
+        time+=p[i].BT;
+        else{
+            time+=p[i].AT-p[i-1].CT+p[i].BT;
+        }
+        p[i].CT=time;
+        p[i].TAT=p[i].CT-p[i].AT;
+        p[i].WT=p[i].TAT-p[i].BT;
+    }
 }
 
 
-int main(){
-    int n,c=0;
-    double avg_tat=0.0,ttat=0.0,avg_wt=0.0,twt=0.0;
-    printf("Enter Number of Process :");
+int main() {
+    int n;
+    printf("\nEnter number of processes: ");
     scanf("%d",&n);
-    struct FCFS p[n];
-    for (int i = 0; i < n; i++)
-    {
-        printf("Enter details for Process %d:\n ",(i+1));
-        p[i].pid = (i+1);
-        printf("Enter Process %d arrival time: \n",(i+1));
-        scanf("%d",&p[i].at);
-        printf("Enter Process %d burst time: \n",(i+1));
-        scanf("%d",&p[i].bt);
-    }
-
-    sort(p,n);
-    for(int i=0;i<n;i++)
-    {
-        if(c>=p[i].at){
-            c+=p[i].bt;
-        }else
-        {
-            c+= p[i].at-p[i-1].ct+p[i].bt;
-        }
-        p[i].ct = c;
-    }
-
+    Process p[n];
     for(int i=0;i<n;i++){
-        p[i].tat= p[i].ct-p[i].at;
+        printf("\nProcess %d AT and BT : ",i+1);
+        p[i].id=i+1;
+        scanf("%d %d",&p[i].AT,&p[i].BT);
+        p[i].BTL = p[i].BT;
     }
-    for(int i=0;i<n;i++){
-        p[i].wt= p[i].tat-p[i].bt;
-    }
-    
-
-    printf("FCFS Sheduling: \n");
-    printf("PID\tAT\tBT\tCT\tTAT\tWT\n");
-    for (int i = 0; i < n; i++)
-    {
-        printf("%d\t%d\t%d\t%d\t%d\t%d\t\n",p[i].pid,p[i].at,p[i].bt,p[i].ct,p[i].tat,p[i].wt);
-    }
-    for (int i = 0; i < n; i++){
-        ttat+=p[i].tat;
-        twt+=p[i].wt;
-    }
-
-    avg_tat = ttat/(double)n;
-    avg_wt = twt/(double)n;
-    printf("Average Turn Around Time :%lf",avg_tat);
-    printf("Average Waiting Time :%lf",avg_wt);
-
-
+    sorted(p,n);
+    FCFS(p,n);
+    print_process_data(p,n);
 }
