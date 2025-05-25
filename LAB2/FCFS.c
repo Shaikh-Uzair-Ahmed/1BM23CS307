@@ -36,17 +36,17 @@ void print_process_data(Process p[], int n) {
     printf("Average Waiting time: %lf\n", avg_wt);
 }
 
-void FCFS(Process p[],int n){
-    int completed=0,time=0;
-    for(int i=0;i<n;i++){
-        if(time>=p[i].AT)
-        time+=p[i].BT;
-        else{
-            time+=p[i].AT-p[i-1].CT+p[i].BT;
+void FCFS(Process p[], int n) {
+    int time = 0;
+    for (int i = 0; i < n; i++) {
+        // Wait if the CPU is idle
+        if (time < p[i].AT) {
+            time = p[i].AT;
         }
-        p[i].CT=time;
-        p[i].TAT=p[i].CT-p[i].AT;
-        p[i].WT=p[i].TAT-p[i].BT;
+        time += p[i].BT;
+        p[i].CT = time;
+        p[i].TAT = p[i].CT - p[i].AT;
+        p[i].WT = p[i].TAT - p[i].BT;
     }
 }
 
