@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 typedef struct Process{
-    int id,AT,BT,CT,TAT,WT,BTL;
+    int id,AT,BT,CT,TAT,WT;
 }Process;
 
 void sorted(Process p[], int n) {
@@ -60,7 +60,6 @@ int main() {
         printf("\nProcess %d AT and BT : ",i+1);
         p[i].id=i+1;
         scanf("%d %d",&p[i].AT,&p[i].BT);
-        p[i].BTL = p[i].BT;
     }
     sorted(p,n);
     FCFS(p,n);
